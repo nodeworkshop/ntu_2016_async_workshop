@@ -1,0 +1,13 @@
+{
+  "generator-kraken": {
+    "taskModule": "grunt",
+    "description": "a demo test app for API integration",
+    "author": "Aeshan Wijetunge",
+    "templateModule": "makara",
+    "i18n": false,
+    "componentPackager": false,
+    "cssModule": "less",
+    "jsModule": "requirejs",
+    "useJson": null
+  }
+}

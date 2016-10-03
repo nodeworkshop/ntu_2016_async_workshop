@@ -1,0 +1,17 @@
+{
+  "name": "nodeserv",
+  "version": "1.0.0",
+  "description": "A skeleton node service for API integration testing",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Aeshan Wijetunge",
+  "license": "ISC",
+  "dependencies": {
+    "async": "^2.0.1",
+    "body-parser": "^1.15.2",
+    "express": "^4.14.0",
+    "request": "^2.74.0"
+  }
+}
