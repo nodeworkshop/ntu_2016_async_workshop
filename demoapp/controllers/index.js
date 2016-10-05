@@ -56,14 +56,16 @@ module.exports = function (router) {
 		async.series([
 		    function(callback){
 		        // task#1 API call
-		        
+		        addTask("Task1",callback);
 		    },
 		    function(callback){
 		        // task#2 API call
+		        //refer to the example above
 		    }
 		],function(err, results){
 			//After All tasks added
-			//do something		
+			//do something
+			res.send();		
 		});
 	});
 
@@ -84,12 +86,13 @@ module.exports = function (router) {
 		],function(err, results){
 			//All tasks added
 			//do something
+			res.send();
 		});
 	});
 
 	//Lab 2.0 PayPal API Authentication
 	//Replace the clientID & secret as per your registered PayPal Application
-	//and replace pp-token-api uri below to the correct API to get the access_token from
+	//and replace pp-token-api uri below to the correct API to get the access_token from PP Dev portal
 	function getAccessToken(callback){
 
 		var clientID = 'copy-in-you-client-id-from-the-paypal-developer-portal',
@@ -97,9 +100,10 @@ module.exports = function (router) {
 			accessToken = '';
 
 		//don't forget to call the right PP API for the accessToken
+		//check that the HTTP method is correct as per POSTMAN
 		request({
 		  url: 'copy-in-the-paypal-token-api',
-		  method: 'POST',
+		  method: 'GET',
 		  auth: {
 		    user: clientID,
 		    pass: clientSecret
@@ -206,7 +210,8 @@ module.exports = function (router) {
 		  }
 		};
 
-		 request.post(options, function (err,response,body){
+		 //TODO Fix this request as per POSTMAN call
+		 request.get(options, function (err,response,body){
            console.log('Payment response: %j', response);
            console.log('Payment error: %j',err);
            if (err){
