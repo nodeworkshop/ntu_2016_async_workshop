@@ -4,6 +4,7 @@
   "description": "a demo test app for API integration",
   "author": "Aeshan Wijetunge",
   "main": "index.js",
+  "engines" : { "node" : "<=4.5.0" },
   "scripts": {
     "test": "grunt test",
     "build": "grunt build",

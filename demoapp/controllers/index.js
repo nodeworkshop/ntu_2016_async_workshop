@@ -20,10 +20,16 @@ module.exports = function (router) {
 
 	router.get('/myfirstapicall', function (req, res) {
 
-		request.get('include-the-api-uri-here', {timeout: 1500}, function(err, response, body) {
+		request.get('https://api.github.com/users/aeshanw',
+		  {
+			timeout: 1500,
+			headers: {
+		    	'User-Agent': 'demoapp'
+		    }
+		}, function(err, response, body) {
 		 if(response && response.statusCode == 200){
-	        console.log(body);
-	        res.json(body);
+	        console.log('github response: %j', body);
+	        res.send('Github call complete!');
 	      } else {
 	        console.log('error: '+ response.statusCode);
 	        console.log(body);
@@ -61,11 +67,14 @@ module.exports = function (router) {
 		    function(callback){
 		        // task#2 API call
 		        //refer to the example above
+		        addTask("Task2",callback);
 		    }
 		],function(err, results){
 			//After All tasks added
 			//do something
-			res.send();		
+			console.log('Errors: %j',err);
+			console.log("results: %j",results)
+			res.send('All Tasks added!');		
 		});
 	});
 
@@ -79,14 +88,18 @@ module.exports = function (router) {
 		async.parallel([
 		    function(callback){
 		        // task#1 API call
+		        addTask("Task1",callback);
 		    },
 		    function(callback){
 		        // task#2 API call
+		        addTask("Task2",callback);
 		    }
 		],function(err, results){
 			//All tasks added
 			//do something
-			res.send();
+			console.log('Errors: %j',err);
+			console.log("results: %j",results)
+			res.send('All Tasks added!');
 		});
 	});
 
@@ -95,15 +108,15 @@ module.exports = function (router) {
 	//and replace pp-token-api uri below to the correct API to get the access_token from PP Dev portal
 	function getAccessToken(callback){
 
-		var clientID = 'copy-in-you-client-id-from-the-paypal-developer-portal',
-			clientSecret = 'copy-in-you-client-secret-from-the-paypal-developer-portal',
+		var clientID = 'your-client-id-goes-here',
+			clientSecret = 'your-client-secret-goes-here',
 			accessToken = '';
 
 		//don't forget to call the right PP API for the accessToken
 		//check that the HTTP method is correct as per POSTMAN
 		request({
-		  url: 'copy-in-the-paypal-token-api',
-		  method: 'GET',
+		  url: 'https://api.sandbox.paypal.com/v1/oauth2/token',
+		  method: 'POST',
 		  auth: {
 		    user: clientID,
 		    pass: clientSecret
@@ -117,8 +130,10 @@ module.exports = function (router) {
 	router.get('/gettoken', function (req, res) {
 		getAccessToken(function(err, response) {
 		  var json = JSON.parse(response.body);
+		  console.log('Error: %j',err);
 		  //If you did it correctly you should the Access Token in the logs
 		  console.log("Access Token:", json.access_token);
+		  res.send('/oauth2/token call complete!');
 		});
 	});
 
@@ -127,7 +142,7 @@ module.exports = function (router) {
 	var addCardToVault =  function(CardDetails, accessToken, cb){
 		console.log("Card: %j",CardDetails);
 		var options = {
-		  url: 'add-card-to-vault-api-uri',
+		  url: 'https://api.sandbox.paypal.com/v1/vault/credit-cards',
 		  json: true,
     	  headers: {
            "content-type": "application/json",
@@ -171,7 +186,8 @@ module.exports = function (router) {
 		  //If you did it correctly you should the Access Token in the logs
 		  console.log("Access Token:", json.access_token);
 		  var accessToken = json.access_token;
-			addCardToVault(card1, accessToken ,function(){
+			addCardToVault(card1, accessToken ,function(err, cardToken){
+				console.log('cardToken: '+cardToken);
 				res.send('Card Added to Vault!');
 			});
 		});
@@ -185,7 +201,33 @@ module.exports = function (router) {
 
 		//copy the POSTMAN body as the transaction object
 		//this will act as the base skeleton upon which we'll add more data
-		var transaction = {/* Insert Request Body here as per POSTMAN */};	
+		var transaction = {
+		  "intent":"sale",
+		  "payer":{
+		    "payment_method":"credit_card",
+		    "funding_instruments":[
+		      {
+		        "credit_card_token":{
+		          "credit_card_id":"CARD-8KX35458F2546803TK7XET7I"
+		        }
+		      }
+		    ]
+		  },
+		  "transactions":[
+		    {
+		      "amount":{
+		        "total":"3.27",
+		        "currency":"SGD",
+		        "details":{
+		          "subtotal":"3.21",
+		          "tax":"0.03",
+		          "shipping":"0.03"
+		        }
+		      },
+		      "description":"This is the payment transaction description."
+		    }
+		  ]
+		};	
 
 		//adding more parameters to the request dynamically
 		transaction.payer.funding_instruments[0].credit_card_token.credit_card_id = CardToken;
@@ -198,7 +240,7 @@ module.exports = function (router) {
 		console.log('transaction :%j',transaction);
 
 		var options = {
-		  url: 'replace-with-pp-payment-api-uri',
+		  url: 'https://api.sandbox.paypal.com/v1/payments/payment',
 		  json: true,
     	  headers: {
            "content-type": "application/json",
@@ -211,7 +253,7 @@ module.exports = function (router) {
 		};
 
 		 //TODO Fix this request as per POSTMAN call
-		 request.get(options, function (err,response,body){
+		 request.post(options, function (err,response,body){
            console.log('Payment response: %j', response);
            console.log('Payment error: %j',err);
            if (err){
@@ -266,6 +308,7 @@ module.exports = function (router) {
 		    },
 		    function(callback){
 		        //TODO add card 2 to vault
+		        addCardToVault(card2, accessToken, callback);
 		    }
 		],function(err, results){
 			//All Cards Added to Vault!
@@ -281,7 +324,7 @@ module.exports = function (router) {
 			    },
 			    function(callback){
 			    	//make payment with card 2 token
-			    	//TODO <Complete the code here!>
+			    	payWithToken(subtotal,tax,shipping,results[1], accessToken, callback)
 			    }
 			], function(payErr, payResults){
 				//All Payments complete!
@@ -298,7 +341,7 @@ module.exports = function (router) {
 		  var json = JSON.parse(response.body);
 		  //If you did it correctly you should the Access Token in the logs
 		  console.log("Access Token:", json.access_token);
-		  accessToken = json.access_token;
+		  var accessToken = json.access_token;
 		  accessTokenReceived(accessToken, res);
 		});
 	});
